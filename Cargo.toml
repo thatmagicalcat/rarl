@@ -1,0 +1,11 @@
+[package]
+name = "rarl"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+cairo-rs = "0.20.7"
+image = { version = "0.25.6", default-features = false, features = ["png"] }
+pango = "0.20.9"
+pangocairo = "0.20.7"
+resvg = "0.45.0"
