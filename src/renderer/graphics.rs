@@ -38,7 +38,7 @@ pub fn clear(cr: &Context, color: Color) {
     cr.paint().unwrap();
 }
 
-pub fn draw_text(cr: &Context, text: &str, x: f64, y: f64, size: f64, text_color: Color) {
+pub fn draw_text(cr: &Context, text: &str, (x, y): (f64, f64), size: f64, text_color: Color) {
     cr.new_path();
 
     let (r, g, b, a) = text_color.to_rgba();
@@ -60,7 +60,13 @@ pub fn draw_text(cr: &Context, text: &str, x: f64, y: f64, size: f64, text_color
     show_layout(cr, &layout);
 }
 
-pub fn draw_line(cr: &Context, x1: f64, y1: f64, x2: f64, y2: f64, thickness: f64, color: Color) {
+pub fn draw_line(
+    cr: &Context,
+    (x1, y1): (f64, f64),
+    (x2, y2): (f64, f64),
+    thickness: f64,
+    color: Color,
+) {
     cr.new_path();
 
     let (r, g, b, a) = color.to_rgba();
@@ -73,8 +79,7 @@ pub fn draw_line(cr: &Context, x1: f64, y1: f64, x2: f64, y2: f64, thickness: f6
 
 pub fn draw_rectangle(
     cr: &Context,
-    x: f64,
-    y: f64,
+    (x, y): (f64, f64),
     width: f64,
     height: f64,
     thickness: f64,
@@ -91,8 +96,7 @@ pub fn draw_rectangle(
 
 pub fn draw_circle(
     cr: &Context,
-    x: f64,
-    y: f64,
+    (center_x, center_y): (f64, f64),
     radius: f64,
     thickness: f64,
     color: Color,
@@ -102,7 +106,7 @@ pub fn draw_circle(
 
     let (r, g, b, a) = color.to_rgba();
     cr.set_source_rgba(r, g, b, a);
-    cr.arc(x, y, radius, 0.0, 2.0 * std::f64::consts::PI);
+    cr.arc(center_x, center_y, radius, 0.0, 2.0 * std::f64::consts::PI);
     cr.set_line_width(thickness);
     cr.stroke_preserve().unwrap();
 
@@ -112,4 +116,22 @@ pub fn draw_circle(
         cr.set_source_rgba(r, g, b, a);
         cr.fill().unwrap();
     }
+}
+
+pub fn draw_arc(
+    cr: &Context,
+    (x, y): (f64, f64),
+    angle1: f64,
+    angle2: f64,
+    radius: f64,
+    thickness: f64,
+    color: Color,
+) {
+    cr.new_path();
+
+    let (r, g, b, a) = color.to_rgba();
+    cr.set_source_rgba(r, g, b, a);
+    cr.arc(x, y, radius, angle1, angle2);
+    cr.set_line_width(thickness);
+    cr.stroke().unwrap();
 }
