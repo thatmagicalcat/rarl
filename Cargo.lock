@@ -132,6 +132,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
 
 [[package]]
+name = "ezing"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "566e88319a9d235613fa84128a4b24450923bf0380d472f161b324936b18a7d1"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
 name = "fdeflate"
 version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -574,6 +583,7 @@ name = "rarl"
 version = "0.1.0"
 dependencies = [
  "cairo-rs",
+ "ezing",
  "image",
  "pango",
  "pangocairo",
