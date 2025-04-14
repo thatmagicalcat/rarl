@@ -6,4 +6,4 @@ The library is built on top of the [cairographics](https://cairographics.org) fo
 ## Example animation
 The code for this animation can be found in `src/main.rs` file.
 
-![output](output.mp4)
+![output.webm](https://github.com/user-attachments/assets/c7a6b3d0-91ad-4ccd-a189-213677d3000b)
