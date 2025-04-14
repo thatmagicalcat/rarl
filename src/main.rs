@@ -35,12 +35,12 @@ fn main() {
         cr.set_antialias(cairo::Antialias::Best);
 
         // clear the background
-        graphics::clear(cr, graphics::Color::Black);
+        graphics::clear(cr, graphics::color::BLACK);
 
         let (width, height) = renderer.get_frame_size();
         let spacing = 50.0;
         draw_coordinate_axes(cr, width as _, height as _);
-        draw_grid_lines(cr, width as _, height as _, spacing, graphics::Color::Gray);
+        draw_grid_lines(cr, width as _, height as _, spacing, graphics::color::GRAY);
 
         let center_x = width as f64 / 2.0;
         let center_y = height as f64 / 2.0;
@@ -50,7 +50,7 @@ fn main() {
             "x",
             (width as f64 - 60.0, center_y - 60.0),
             32.0,
-            graphics::Color::White,
+            graphics::color::WHITE,
         );
 
         graphics::draw_text(
@@ -58,7 +58,7 @@ fn main() {
             "y",
             (center_x + 30.0, 10.0),
             32.0,
-            graphics::Color::White,
+            graphics::color::WHITE,
         );
 
         let radius = 4.0;
@@ -73,8 +73,8 @@ fn main() {
                 (x, y),
                 5.0,
                 10.0,
-                graphics::Color::Yellow,
-                Some(graphics::Color::Yellow),
+                graphics::color::YELLOW,
+                Some(graphics::color::YELLOW),
             );
 
             let text = format!(
@@ -88,7 +88,7 @@ fn main() {
                 &text,
                 (x + 10.0, y - 70.0),
                 32.0,
-                graphics::Color::White,
+                graphics::color::WHITE,
             );
         });
 
@@ -107,7 +107,7 @@ fn main() {
                     (center_x, center_y),
                     (x, y),
                     2.0,
-                    graphics::Color::White,
+                    graphics::color::WHITE,
                 );
             }
 
@@ -119,7 +119,7 @@ fn main() {
                 0.0,
                 radius * spacing,
                 4.0,
-                graphics::Color::White,
+                graphics::color::WHITE,
             );
 
             // point
@@ -128,8 +128,8 @@ fn main() {
                 (x, y),
                 5.0,
                 10.0,
-                graphics::Color::Yellow,
-                Some(graphics::Color::Yellow),
+                graphics::color::YELLOW,
+                Some(graphics::color::YELLOW),
             );
 
             let mut cy = -(y - center_y) / 50.0;
@@ -146,7 +146,7 @@ fn main() {
                 &text,
                 (x + 10.0, y - 70.0),
                 32.0,
-                graphics::Color::White,
+                graphics::color::WHITE,
             );
         });
 
@@ -175,7 +175,7 @@ fn draw_coordinate_axes(cr: &cairo::Context, width: f64, height: f64) {
         (0.0, center_y + 1.0),
         (width, center_y + 1.0),
         2.0,
-        graphics::Color::White,
+        graphics::color::WHITE,
     );
 
     // Draw y-axis
@@ -184,7 +184,7 @@ fn draw_coordinate_axes(cr: &cairo::Context, width: f64, height: f64) {
         (center_x, 0.0),
         (center_x, height),
         2.0,
-        graphics::Color::White,
+        graphics::color::WHITE,
     );
 }
 
@@ -195,7 +195,7 @@ fn draw_grid_lines(
     spacing: f64,
     color: graphics::Color,
 ) {
-    let (r, g, b, a) = color.to_rgba();
+    let [b, g, r, a] = color;
     cr.set_source_rgba(r, g, b, a);
 
     // Draw vertical lines

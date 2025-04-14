@@ -3,22 +3,25 @@ use cairo::{Context, Format, ImageSurface};
 use pango::FontDescription;
 use pangocairo::functions::{create_layout, show_layout};
 
-type Color = [f64; 4];
+pub type Color = [f64; 4];
 
-#[rustfmt::skip]
 pub mod color {
-    //! RGBA values]
-    
+    //! RGBA values
+    //! Note: Put the color values in BGRA format i you're using
+    //! `set_source_rgba` function from cairo
+
     use super::Color;
 
-    pub const RED:          Color = [1.0, 0.0, 0.0, 1.0];
-    pub const GREEN:        Color = [0.0, 1.0, 0.0, 1.0];
-    pub const BLUE:         Color = [0.0, 0.0, 1.0, 1.0];
-    pub const YELLOW:       Color = [0.0, 1.0, 1.0, 1.0];
-    pub const BLACK:        Color = [0.0, 0.0, 0.0, 1.0];
-    pub const WHITE:        Color = [1.0, 1.0, 1.0, 1.0];
-    pub const TRANSPARENT:  Color = [0.0, 0.0, 0.0, 0.0];
- }
+    pub const RED: Color = [1.0, 0.0, 0.0, 1.0];
+    pub const GREEN: Color = [0.0, 1.0, 0.0, 1.0];
+    pub const BLUE: Color = [0.0, 0.0, 1.0, 1.0];
+    pub const GRAY: Color = [0.5, 0.5, 0.5, 1.0];
+    pub const ORANGE: Color = [1.0, 0.271, 0.0, 1.0];
+    pub const YELLOW: Color = [0.0, 1.0, 1.0, 1.0];
+    pub const BLACK: Color = [0.0, 0.0, 0.0, 1.0];
+    pub const WHITE: Color = [1.0, 1.0, 1.0, 1.0];
+    pub const TRANSPARENT: Color = [0.0, 0.0, 0.0, 0.0];
+}
 
 pub fn clear(cr: &Context, color: Color) {
     let [b, g, r, a] = color;
