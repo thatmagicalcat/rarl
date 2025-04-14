@@ -6,10 +6,15 @@ use cairo::{Format, ImageSurface};
 use crate::SHOW_FFMPEG_OUTPUT;
 
 mod frame;
+pub mod graphics;
+
 pub use frame::Frame;
 
 pub struct Renderer {
     surface: cairo::ImageSurface,
+
+    frame_width: u32,
+    frame_height: u32,
 
     duration_secs: f64,
     frame_counter: f64,
@@ -63,11 +68,18 @@ impl Renderer {
             ffmpeg_process,
             ffmpeg_stdin,
 
+            frame_width: width,
+            frame_height: height,
+
             frame_counter: 0.0,
             duration_secs: duration_secs as _,
             fps: fps as _,
             total_frame_count: duration_secs as f64 * fps as f64,
         }
+    }
+
+    pub fn get_frame_size(&self) -> (u32, u32) {
+        (self.frame_width, self.frame_height)
     }
 
     pub fn get_frame(&mut self) -> Option<Frame> {
@@ -142,8 +154,6 @@ impl Renderer {
             .expect("failed to wait for typst process to finish");
 
         assert!(output.status.success());
-
-        std::fs::write("image.svg", &output.stdout).unwrap();
 
         let rtree =
             resvg::usvg::Tree::from_data(&output.stdout, &resvg::usvg::Options::default()).unwrap();
@@ -235,5 +245,85 @@ impl Typst {
         .unwrap();
 
         cr.paint().unwrap();
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum FinishAction {
+    /// Start the animation again from t = 0
+    StartOver,
+
+    /// Rewind (will interpolate between 0 and 1)
+    Rewind,
+
+    /// Stop drawing
+    Stop,
+
+    /// Drawing using t = 1
+    RepeatEnd,
+}
+
+#[derive(Debug, Clone)]
+pub struct Animator {
+    finish_action: FinishAction,
+    start: f64,
+    end: f64,
+    easing_fn: fn(f64) -> f64,
+    interval_length: f64,
+}
+
+impl Animator {
+    pub fn new(
+        start: f64,
+        end: f64,
+        easing_fn: fn(f64) -> f64,
+        finish_action: FinishAction,
+    ) -> Self {
+        Self {
+            finish_action,
+            start,
+            end,
+            easing_fn,
+            interval_length: end - start,
+        }
+    }
+
+    pub fn draw<F: FnOnce(f64)>(&mut self, t: f64, f: F) {
+        if t < self.start {
+            return;
+        }
+
+        f((self.easing_fn)(match self.finish_action {
+            _ if t < self.end => (t - self.start) / self.interval_length,
+
+            FinishAction::StartOver => {
+                self.start = t;
+                self.end = t + self.interval_length;
+
+                0.0
+            }
+
+            FinishAction::Rewind => {
+                let overshoot = t - self.end;
+
+                if overshoot < self.interval_length {
+                    1.0 - (overshoot / self.interval_length)
+                } else {
+                    self.start = dbg!(t);
+                    self.end = dbg!(t + self.interval_length);
+                    0.0
+                }
+            }
+
+            FinishAction::RepeatEnd => 1.0,
+            FinishAction::Stop => return,
+        }));
+    }
+
+    pub fn is_finished(&self, t: f64) -> bool {
+        matches!(
+            self.finish_action,
+            FinishAction::RepeatEnd | FinishAction::Stop
+        ) && t >= self.end
     }
 }
