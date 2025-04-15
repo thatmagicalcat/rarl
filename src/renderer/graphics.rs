@@ -3,6 +3,8 @@ use cairo::{Context, Format, ImageSurface};
 use pango::FontDescription;
 use pangocairo::functions::{create_layout, show_layout};
 
+const DEFAULT_FONT: &str = "JetBrainsMono";
+
 pub type Color = [f64; 4];
 
 pub mod color {
@@ -29,7 +31,31 @@ pub fn clear(cr: &Context, color: Color) {
     cr.paint().unwrap();
 }
 
-pub fn draw_text(cr: &Context, text: &str, (x, y): (f64, f64), size: f64, text_color: Color) {
+pub fn measure_text(cr: &Context, text: &str, size: f64, font_name: Option<&str>) -> (f64, f64) {
+    // Create Pango layout
+    let layout = create_layout(cr);
+
+    // Set font
+    let font_desc =
+        FontDescription::from_string(&format!("{} {}", font_name.unwrap_or(DEFAULT_FONT), size));
+    layout.set_font_description(Some(&font_desc));
+
+    // Set text (could include markup)
+    layout.set_markup(text);
+
+    // Get the size of the text
+    let (width, height) = layout.pixel_size();
+    (width as f64, height as f64)
+}
+
+pub fn draw_text(
+    cr: &Context,
+    text: &str,
+    (x, y): (f64, f64),
+    size: f64,
+    text_color: Color,
+    font_name: Option<&str>,
+) {
     cr.new_path();
 
     let [b, g, r, a] = text_color;
@@ -41,7 +67,8 @@ pub fn draw_text(cr: &Context, text: &str, (x, y): (f64, f64), size: f64, text_c
     let layout = create_layout(cr);
 
     // Set font
-    let font_desc = FontDescription::from_string(&format!("JetBrainsMono {}", size));
+    let font_desc =
+        FontDescription::from_string(&format!("{} {}", font_name.unwrap_or(DEFAULT_FONT), size));
     layout.set_font_description(Some(&font_desc));
 
     // Set text (could include markup)
@@ -74,15 +101,22 @@ pub fn draw_rectangle(
     width: f64,
     height: f64,
     thickness: f64,
-    color: Color,
+    border_color: Color,
+    fill_color: Option<Color>,
 ) {
     cr.new_path();
 
-    let [b, g, r, a] = color;
+    let [b, g, r, a] = border_color;
     cr.set_source_rgba(r, g, b, a);
     cr.rectangle(x, y, width, height);
     cr.set_line_width(thickness);
-    cr.stroke().unwrap();
+    cr.stroke_preserve().unwrap();
+
+    if let Some(fill_color) = fill_color {
+        let [b, g, r, a] = fill_color;
+        cr.set_source_rgba(r, g, b, a);
+        cr.fill().unwrap();
+    }
 }
 
 pub fn draw_circle(
