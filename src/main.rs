@@ -161,8 +161,14 @@ fn main() {
         std::io::stdout().flush().unwrap();
     }
 
+    let render_time = clock.elapsed();
+
     renderer.finish();
-    println!("Finished, took: {:.2?}", clock.elapsed());
+    println!(
+        "\rFinished              \n    avg. frame time: {:.2?}\n    total time: {:.2?}",
+        render_time / renderer.total_frame_count(),
+        clock.elapsed()
+    );
 }
 
 fn draw_coordinate_axes(cr: &cairo::Context, width: f64, height: f64) {

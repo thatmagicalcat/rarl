@@ -1,5 +1,8 @@
-use std::io::{BufWriter, Write};
+use std::io::{BufReader, BufWriter, Read, Write};
 use std::process;
+
+use std::sync::mpsc;
+use std::thread;
 
 use cairo::{Format, ImageSurface};
 
@@ -21,8 +24,11 @@ pub struct Renderer {
     total_frame_count: f64,
     fps: f64,
 
+    tx: Option<mpsc::Sender<Box<[u8]>>>,
+    thread: Option<thread::JoinHandle<()>>,
+
     ffmpeg_process: process::Child,
-    ffmpeg_stdin: Option<BufWriter<process::ChildStdin>>,
+    // ffmpeg_stdin: Option<BufWriter<process::ChildStdin>>,
 }
 
 impl Renderer {
@@ -55,21 +61,31 @@ impl Renderer {
         }
 
         let mut ffmpeg_process = ffmpeg_command.spawn().unwrap();
-
-        let ffmpeg_stdin = Some(BufWriter::new(
+        let mut ffmpeg_stdin = Some(BufWriter::new(
             ffmpeg_process
                 .stdin
                 .take()
                 .expect("failed to open child stdin"),
         ));
 
+        let (tx, rx) = mpsc::channel::<Box<[u8]>>();
+        let handle = thread::spawn(move || {
+            while let Ok(frame) = rx.recv() {
+                ffmpeg_stdin.as_mut().unwrap().write_all(&frame).unwrap();
+            }
+        });
+
         Self {
             surface,
             ffmpeg_process,
-            ffmpeg_stdin,
 
+            // ffmpeg_stdin: todo!(),
+            // ffmpeg_stdin,
             frame_width: width,
             frame_height: height,
+
+            tx: Some(tx),
+            thread: Some(handle),
 
             frame_counter: 0.0,
             duration_secs: duration_secs as _,
@@ -89,12 +105,8 @@ impl Renderer {
     pub fn submit(&mut self, mut frame: Frame) {
         drop(frame.context.take());
 
-        let data = self.surface.data().unwrap();
-        self.ffmpeg_stdin
-            .as_mut()
-            .unwrap()
-            .write_all(&data)
-            .unwrap();
+        let data = self.surface.data().unwrap().to_vec().into_boxed_slice();
+        self.tx.as_ref().unwrap().send(data).unwrap();
 
         self.frame_counter += 1.0;
     }
@@ -103,7 +115,8 @@ impl Renderer {
     pub fn finish(&mut self) -> bool {
         assert_eq!(self.frame_counter, self.total_frame_count);
 
-        drop(self.ffmpeg_stdin.take());
+        drop(self.tx.take());
+        self.thread.take().unwrap().join().unwrap();
         let status = self.ffmpeg_process.wait().unwrap();
         status.success()
     }
@@ -164,7 +177,7 @@ impl Renderer {
 
 impl Drop for Renderer {
     fn drop(&mut self) {
-        if self.ffmpeg_stdin.is_some() {
+        if self.tx.is_some() {
             self.finish();
         }
     }
