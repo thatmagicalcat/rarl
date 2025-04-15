@@ -94,6 +94,11 @@ impl Renderer {
         }
     }
 
+    pub fn get_temporary_context(&self) -> cairo::Context {
+        let cr = cairo::Context::new(&self.surface);
+        cr.unwrap()
+    }
+
     pub fn get_frame_size(&self) -> (u32, u32) {
         (self.frame_width, self.frame_height)
     }
@@ -187,7 +192,6 @@ pub struct Typst {
     tree: resvg::usvg::Tree,
     surface: Option<ImageSurface>,
 
-    translation: (f32, f32),
     scale: (f32, f32),
 }
 
@@ -197,7 +201,6 @@ impl Typst {
             tree,
             surface: None,
 
-            translation: (0.0, 0.0),
             scale: (1.0, 1.0),
         }
     }
@@ -231,11 +234,6 @@ impl Typst {
         );
     }
 
-    pub fn translate(&mut self, x: f32, y: f32) -> &mut Self {
-        self.translation = (x, y);
-        self
-    }
-
     pub fn scale(&mut self, sx: f32, sy: f32) -> &mut Self {
         self.scale = (sx, sy);
         self
@@ -245,17 +243,12 @@ impl Typst {
         self.tree.size()
     }
 
-    pub fn render(&self, target: &Frame) {
+    pub fn render(&self, (x, y): (f64, f64), target: &Frame) {
         assert!(self.surface.is_some());
 
         let cr = target.get_context();
-
-        cr.set_source_surface(
-            self.surface.as_ref().unwrap(),
-            self.translation.0 as _,
-            self.translation.1 as _,
-        )
-        .unwrap();
+        cr.set_source_surface(self.surface.as_ref().unwrap(), x as _, y as _)
+            .unwrap();
 
         cr.paint().unwrap();
     }
