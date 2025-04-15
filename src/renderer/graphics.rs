@@ -3,7 +3,7 @@ use cairo::{Context, Format, ImageSurface};
 use pango::FontDescription;
 use pangocairo::functions::{create_layout, show_layout};
 
-pub type Color = [f64; 4];
+type Color = [f64; 4];
 
 pub mod color {
     //! RGBA values
@@ -17,7 +17,7 @@ pub mod color {
     pub const BLUE: Color = [0.0, 0.0, 1.0, 1.0];
     pub const GRAY: Color = [0.5, 0.5, 0.5, 1.0];
     pub const ORANGE: Color = [1.0, 0.271, 0.0, 1.0];
-    pub const YELLOW: Color = [0.0, 1.0, 1.0, 1.0];
+    pub const YELLOW: Color = [1.0, 1.0, 0.0, 1.0];
     pub const BLACK: Color = [0.0, 0.0, 0.0, 1.0];
     pub const WHITE: Color = [1.0, 1.0, 1.0, 1.0];
     pub const TRANSPARENT: Color = [0.0, 0.0, 0.0, 0.0];
